@@ -1,0 +1,15 @@
+model_name,task_name,main_score
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,Assin2STS,0.256558
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,SICK-BR-STS,0.279504
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,STSBenchmarkMultilingualSTS,0.218273
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,MassiveIntentClassification,0.1721245
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,MultiHateClassification,0.5493
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,BrazilianToxicTweetsClassification,0.207178
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,HateSpeechPortugueseClassification,0.537402
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,TweetSentimentClassification,0.361328
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,MultiLongDocReranking,0.54758
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,WikipediaRerankingMultilingual,0.41149
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,XGlueWPRReranking,0.67757
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,WebFAQRetrieval,0.0134
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,MultiLongDocRetrieval,0.013715
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,WikipediaRetrievalMultilingual,0.0273
