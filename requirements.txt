@@ -1,0 +1,7 @@
+mteb
+datasets==3.6.0
+accelerate>=1.1.0
+sentence_transformers
+dotenv
+pandas
+torch
