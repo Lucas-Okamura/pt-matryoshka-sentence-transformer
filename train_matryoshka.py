@@ -190,8 +190,8 @@ for dim in matryoshka_dims:
     ))
     # IRIS Test
     test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=iris_sts["test"]["premise"],
-        sentences2=iris_sts["test"]["hypothesis"],
+        sentences1=iris_sts["test"]["sentence1"],
+        sentences2=iris_sts["test"]["sentence2"],
         scores=[s / 5.0 for s in iris_sts["test"]['relatedness_score']],
         name=f"iris_sts-test-{dim}",
         truncate_dim=dim,
