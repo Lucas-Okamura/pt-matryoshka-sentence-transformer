@@ -16,7 +16,8 @@ logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 model_name = "lorenzocc/NeoBERTugues"
 model_raw_name = model_name.split("/")[-1]
 
-train_batch_size = 8
+train_batch_size = 16
+max_seq_length = 2048
 random_seed = 42
 
 max_steps = 500_000
@@ -38,7 +39,7 @@ text_features = Features({"text": Value("string")})
 # =========================================================
 # 1. Modelo
 # =========================================================
-word_embedding_model = models.Transformer(model_name)
+word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
 pooling_model = models.Pooling(
     word_embedding_model.get_word_embedding_dimension(),
     pooling_mode="mean"
