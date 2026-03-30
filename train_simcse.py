@@ -16,11 +16,11 @@ logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 model_name = "lorenzocc/NeoBERTugues"
 model_raw_name = model_name.split("/")[-1]
 
-train_batch_size = 16
-max_seq_length = 2048
+train_batch_size = 64
+max_seq_length = 1024
 random_seed = 42
 
-max_steps = 500_000
+max_steps = 150_000
 save_steps = 1_000
 logging_steps = 100
 
@@ -134,7 +134,7 @@ args = SentenceTransformerTrainingArguments(
     max_steps=max_steps,
     per_device_train_batch_size=train_batch_size,
     learning_rate=5e-5,
-    warmup_ratio=0.1,
+    warmup_ratio=0.05,
     weight_decay=0.01,
     fp16=True,
     bf16=False,
