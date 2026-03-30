@@ -16,10 +16,10 @@ load_dotenv()
 # 1. Configurações e Modelo
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "lorenzocc/NeoBERTugues"
+model_name = "jhu-clsp/mmBERT-base"
 model_raw_name = model_name.split("/")[-1]
 matryoshka_dims = [768, 512, 256, 128, 64]
-batch_size = 8
+batch_size = 4
 
 model = SentenceTransformer(model_name)
 
@@ -142,13 +142,13 @@ args = SentenceTransformerTrainingArguments(
     num_train_epochs=20,
     per_device_train_batch_size=batch_size,
     warmup_steps=0.1,
-    weight_decay=0.1,
+    weight_decay=0.2,
     fp16=True,
     eval_strategy="steps",
     eval_steps=250,
     save_strategy="steps",
     logging_steps=100,
-    learning_rate=1e-5,
+    learning_rate=5e-5,
     gradient_accumulation_steps=512//(batch_size*4),
     multi_dataset_batch_sampler="proportional",
     gradient_checkpointing=True, 
@@ -210,4 +210,4 @@ final_test_evaluator(model)
 
 os.makedirs("models", exist_ok=True)
 model.save_pretrained(f"models/{model_raw_name}-matryoshka-sts-pt")
-model.push_to_hub(f"iara_project/{model_raw_name}-matryoshka-sts-pt")
+model.push_to_hub(f"iara-project/{model_raw_name}-matryoshka-sts-pt")

@@ -1,1 +1,1 @@
-accelerate launch --multi-gpu --num_processes 4 train_matryoshka.py
+accelerate launch --multi-gpu --num_processes 4 train_simcse.py
