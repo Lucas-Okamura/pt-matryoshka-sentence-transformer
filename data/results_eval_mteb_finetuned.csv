@@ -209,3 +209,17 @@ iara-project/NeoBERTugues-matryoshka-sts-pt,64,XGlueWPRReranking,0.700755
 iara-project/NeoBERTugues-matryoshka-sts-pt,64,WebFAQRetrieval,0.29875
 iara-project/NeoBERTugues-matryoshka-sts-pt,64,MultiLongDocRetrieval,0.37101
 iara-project/NeoBERTugues-matryoshka-sts-pt,64,WikipediaRetrievalMultilingual,0.52109
+iara-project/mmBERT-base-matryoshka-sts-pt,,Assin2STS,0.7806257783
+iara-project/mmBERT-base-matryoshka-sts-pt,,SICK-BR-STS,0.8496315682
+iara-project/mmBERT-base-matryoshka-sts-pt,,STSBenchmarkMultilingualSTS,0.8112879048
+iara-project/mmBERT-base-matryoshka-sts-pt,,MassiveIntentClassification,0.6063118597
+iara-project/mmBERT-base-matryoshka-sts-pt,,MultiHateClassification,0.6357
+iara-project/mmBERT-base-matryoshka-sts-pt,,BrazilianToxicTweetsClassification,0.1841308594
+iara-project/mmBERT-base-matryoshka-sts-pt,,HateSpeechPortugueseClassification,0.5872558594
+iara-project/mmBERT-base-matryoshka-sts-pt,,TweetSentimentClassification,0.478125
+iara-project/mmBERT-base-matryoshka-sts-pt,,MultiLongDocReranking,0.97248
+iara-project/mmBERT-base-matryoshka-sts-pt,,WikipediaRerankingMultilingual,0.74135
+iara-project/mmBERT-base-matryoshka-sts-pt,,XGlueWPRReranking,0.706545
+iara-project/mmBERT-base-matryoshka-sts-pt,,WebFAQRetrieval,0.50031
+iara-project/mmBERT-base-matryoshka-sts-pt,,MultiLongDocRetrieval,0.59961
+iara-project/mmBERT-base-matryoshka-sts-pt,,WikipediaRetrievalMultilingual,0.70358
