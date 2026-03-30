@@ -195,3 +195,17 @@ iara-project/NeoBERTugues-matryoshka-sts-pt,128.0,XGlueWPRReranking,0.705295
 iara-project/NeoBERTugues-matryoshka-sts-pt,128.0,WebFAQRetrieval,0.39613
 iara-project/NeoBERTugues-matryoshka-sts-pt,128.0,MultiLongDocRetrieval,0.446905
 iara-project/NeoBERTugues-matryoshka-sts-pt,128.0,WikipediaRetrievalMultilingual,0.6074
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,Assin2STS,0.777916
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,SICK-BR-STS,0.870959
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,STSBenchmarkMultilingualSTS,0.790484
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,MassiveIntentClassification,0.454105
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,MultiHateClassification,0.5781
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,BrazilianToxicTweetsClassification,0.224658
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,HateSpeechPortugueseClassification,0.582861
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,TweetSentimentClassification,0.458594
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,MultiLongDocReranking,0.93538
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,WikipediaRerankingMultilingual,0.67735
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,XGlueWPRReranking,0.700755
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,WebFAQRetrieval,0.29875
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,MultiLongDocRetrieval,0.37101
+iara-project/NeoBERTugues-matryoshka-sts-pt,64,WikipediaRetrievalMultilingual,0.52109
