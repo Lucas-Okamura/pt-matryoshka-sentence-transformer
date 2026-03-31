@@ -20,9 +20,12 @@ train_batch_size = 64
 max_seq_length = 1024
 random_seed = 42
 
-max_steps = 150_000
+num_samples = 36_000_000
+num_gpus = 4
+max_steps = num_samples // (train_batch_size * train_batch_size)
 save_steps = 1_000
 logging_steps = 100
+print(f"Treinamento por {max_steps} steps")
 
 output_dir = f"output/{model_raw_name}-simcse-pt-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 final_model_dir = f"models/{model_raw_name}-simcse-pt"
