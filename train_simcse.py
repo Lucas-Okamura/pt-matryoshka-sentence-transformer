@@ -13,19 +13,18 @@ load_dotenv()
 
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "lorenzocc/NeoBERTugues"
-model_raw_name = model_name.split("/")[-1]
+model_name = "neuralmind/bert-large-portuguese-cased"
+model_raw_name = "BERTimbau-large"
 
 train_batch_size = 64
-max_seq_length = 1024
+# max_seq_length = 1024
 random_seed = 42
 
 num_samples = 36_000_000
 num_gpus = 4
-max_steps = num_samples // (train_batch_size * train_batch_size)
+max_steps = num_samples // (train_batch_size * num_gpus)
 save_steps = 1_000
 logging_steps = 100
-print(f"Treinamento por {max_steps} steps")
 
 output_dir = f"output/{model_raw_name}-simcse-pt-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 final_model_dir = f"models/{model_raw_name}-simcse-pt"
@@ -42,7 +41,11 @@ text_features = Features({"text": Value("string")})
 # =========================================================
 # 1. Modelo
 # =========================================================
-word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
+# word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
+word_embedding_model = models.Transformer(
+    model_name,
+    model_args={"add_pooling_layer": False}
+)
 pooling_model = models.Pooling(
     word_embedding_model.get_word_embedding_dimension(),
     pooling_mode="mean"
@@ -145,7 +148,7 @@ args = SentenceTransformerTrainingArguments(
     save_steps=save_steps,
     save_total_limit=3,
     logging_steps=logging_steps,
-    gradient_accumulation_steps=512 // (train_batch_size * 4),
+    # gradient_accumulation_steps=512 // (train_batch_size * 4),
     gradient_checkpointing=True,
     gradient_checkpointing_kwargs={"use_reentrant": False},
     run_name=f"{model_raw_name}-simcse-pt",
@@ -170,7 +173,7 @@ trainer = SentenceTransformerTrainer(
     train_dataset=train_dataset,
     loss=train_loss,
 )
-
+print(f"Treinamento por {max_steps} steps")
 trainer.train()
 
 # =========================================================
