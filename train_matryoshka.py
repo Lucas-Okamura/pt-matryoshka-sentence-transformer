@@ -16,7 +16,7 @@ load_dotenv()
 # 1. Configurações e Modelo
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "iara-project/NeoBERTugues-simcse-pt-ckpt-1000"
+model_name = "iara-project/NeoBERTugues-simcse-pt-ckpt-2000"
 model_raw_name = model_name.split("/")[-1]
 matryoshka_dims = [768, 512, 256, 128, 64]
 batch_size = 64
