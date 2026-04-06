@@ -16,9 +16,8 @@ load_dotenv()
 # 1. Configurações e Modelo
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "intfloat/multilingual-e5-large"
-model_raw_name = "e5-large"#model_name.split("/")[-1]
-matryoshka_dims = [1024, 512, 256, 128, 64]
+model_name = "neuralmind/bert-large-portuguese-cased"
+model_raw_name = "BERTimbau-large"#model_name.split("/")[-1]
 num_gpus = 1
 batch_size = 64
 
@@ -182,12 +181,9 @@ eval_dataset["sick_br"] = sick_br["validation"].map(normalize_sts).rename_column
 mldr = load_dataset("sentence-transformers/mldr", "pt-triplet")
 train_dataset["nli_mldr"] = mldr["train"]
 
-# 3. Definição das Losses com Matryoshka
+# 3. Definição das Losses
 base_mnrl_loss = losses.MultipleNegativesRankingLoss(model)
-matryoshka_mnrl_loss = losses.MatryoshkaLoss(model, base_mnrl_loss, matryoshka_dims=matryoshka_dims)
-
 base_cosent_loss = losses.CoSENTLoss(model)
-matryoshka_cosent_loss = losses.MatryoshkaLoss(model, base_cosent_loss, matryoshka_dims=matryoshka_dims)
 
 # Mapeamento dinâmico corrigido
 loss_map = {}
@@ -195,51 +191,46 @@ loss_map = {}
 # Mapear datasets de TREINO
 for name in train_dataset.keys():
     if "nli" in name or "qa" in name:
-        loss_map[name] = matryoshka_mnrl_loss
+        loss_map[name] = base_mnrl_loss
     else:
-        loss_map[name] = matryoshka_cosent_loss
+        loss_map[name] = base_cosent_loss
 
 # 4. Evaluator (STSb e ASSIN2 Dev)
 evaluators = []
-for dim in matryoshka_dims:
-    # STSb Dev
-    evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=extraglue_sts["validation"]["sentence1"],
-        sentences2=extraglue_sts["validation"]["sentence2"],
-        scores=[s / 5.0 for s in extraglue_sts["validation"]["label"]],
-        name=f"stsb-pt-dev-{dim}",
-        truncate_dim=dim,
-    ))
-    # ASSIN2 Dev
-    evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=assin2["validation"]["premise"],
-        sentences2=assin2["validation"]["hypothesis"],
-        scores=[s / 5.0 for s in assin2["validation"]['relatedness_score']],
-        name=f"assin2-dev-{dim}",
-        truncate_dim=dim,
-    ))
-    # IRIS Dev
-    evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=iris_sts["validation"]["sentence1"],
-        sentences2=iris_sts["validation"]["sentence2"],
-        scores=[s / 5.0 for s in iris_sts["validation"]['relatedness_score']],
-        name=f"iris_sts-dev-{dim}",
-        truncate_dim=dim,
-    ))
-    # sick_br Dev
-    evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=sick_br["validation"]["sentence_A"],
-        sentences2=sick_br["validation"]["sentence_B"],
-        scores=[s / 5.0 for s in sick_br["validation"]['relatedness_score']],
-        name=f"sick_br_dev-{dim}",
-        truncate_dim=dim,
-    ))
+# STSb Dev
+evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=extraglue_sts["validation"]["sentence1"],
+    sentences2=extraglue_sts["validation"]["sentence2"],
+    scores=[s / 5.0 for s in extraglue_sts["validation"]["label"]],
+    name=f"stsb-pt-dev"
+))
+# ASSIN2 Dev
+evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=assin2["validation"]["premise"],
+    sentences2=assin2["validation"]["hypothesis"],
+    scores=[s / 5.0 for s in assin2["validation"]['relatedness_score']],
+    name=f"assin2-dev"
+))
+# IRIS Dev
+evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=iris_sts["validation"]["sentence1"],
+    sentences2=iris_sts["validation"]["sentence2"],
+    scores=[s / 5.0 for s in iris_sts["validation"]['relatedness_score']],
+    name=f"iris_sts-dev"
+))
+# sick_br Dev
+evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=sick_br["validation"]["sentence_A"],
+    sentences2=sick_br["validation"]["sentence_B"],
+    scores=[s / 5.0 for s in sick_br["validation"]['relatedness_score']],
+    name=f"sick_br_dev"
+))
 
 dev_evaluator = SequentialEvaluator(evaluators)
 
 # 5. Argumentos de Treinamento
 args = SentenceTransformerTrainingArguments(
-    output_dir=f"output/{model_raw_name}-matryoshka-sts-pt-loss-v2",
+    output_dir=f"output/{model_raw_name}-sts-pt-loss-v2",
     num_train_epochs=20,
     per_device_train_batch_size=batch_size,
     warmup_steps=0.1,
@@ -272,43 +263,38 @@ trainer.train()
 
 # 7. Avaliação Final (Test Sets)
 test_evaluators = []
-for dim in matryoshka_dims:
-    # STSb Test
-    test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=extraglue_sts["test"]["sentence1"],
-        sentences2=extraglue_sts["test"]["sentence2"],
-        scores=[s / 5.0 for s in extraglue_sts["test"]["similarity_score"]],
-        name=f"stsb-test-{dim}",
-        truncate_dim=dim,
-    ))
-    # ASSIN2 Test
-    test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=assin2["test"]["premise"],
-        sentences2=assin2["test"]["hypothesis"],
-        scores=[s / 5.0 for s in assin2["test"]['relatedness_score']],
-        name=f"assin2-test-{dim}",
-        truncate_dim=dim,
-    ))
-    # IRIS Test
-    test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=iris_sts["test"]["sentence1"],
-        sentences2=iris_sts["test"]["sentence2"],
-        scores=[s / 5.0 for s in iris_sts["test"]['relatedness_score']],
-        name=f"iris_sts-test-{dim}",
-        truncate_dim=dim,
-    ))
-    # sick_br Dev
-    test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=sick_br["test"]["sentence_A"],
-        sentences2=sick_br["test"]["sentence_B"],
-        scores=[s / 5.0 for s in sick_br["test"]['relatedness_score']],
-        name=f"sick_br_dev-{dim}",
-        truncate_dim=dim,
-    ))
+# STSb Test
+test_evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=extraglue_sts["test"]["sentence1"],
+    sentences2=extraglue_sts["test"]["sentence2"],
+    scores=[s / 5.0 for s in extraglue_sts["test"]["similarity_score"]],
+    name=f"stsb-test"
+))
+# ASSIN2 Test
+test_evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=assin2["test"]["premise"],
+    sentences2=assin2["test"]["hypothesis"],
+    scores=[s / 5.0 for s in assin2["test"]['relatedness_score']],
+    name=f"assin2-test"
+))
+# IRIS Test
+test_evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=iris_sts["test"]["sentence1"],
+    sentences2=iris_sts["test"]["sentence2"],
+    scores=[s / 5.0 for s in iris_sts["test"]['relatedness_score']],
+    name=f"iris_sts-test"
+))
+# sick_br Dev
+test_evaluators.append(EmbeddingSimilarityEvaluator(
+    sentences1=sick_br["test"]["sentence_A"],
+    sentences2=sick_br["test"]["sentence_B"],
+    scores=[s / 5.0 for s in sick_br["test"]['relatedness_score']],
+    name=f"sick_br_test"
+))
 
 final_test_evaluator = SequentialEvaluator(test_evaluators)
 final_test_evaluator(model)
 
 os.makedirs("models", exist_ok=True)
-model.save_pretrained(f"models/{model_raw_name}-matryoshka-sts-pt-v2")
-model.push_to_hub(f"iara-project/{model_raw_name}-matryoshka-sts-pt-v2")
+model.save_pretrained(f"models/{model_raw_name}-sts-pt-v2")
+model.push_to_hub(f"iara-project/{model_raw_name}-sts-pt-v2")
