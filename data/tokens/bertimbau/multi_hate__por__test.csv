@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+multi_hate,por,test,iara-project/BERTimbau-large-matryoshka-sts-pt,text,1000,13.863,3.9486999126294755,6,13.0,22.0,26.0,29,exact

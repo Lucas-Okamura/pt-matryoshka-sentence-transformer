@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+MultiLongDocRetrieval,pt-corpus,test,iara-project/e5-large-matryoshka-sts-pt,text,6569,7920.761607550617,5740.320113073818,1001,7688.0,18409.199999999997,25752.479999999996,98642,exact

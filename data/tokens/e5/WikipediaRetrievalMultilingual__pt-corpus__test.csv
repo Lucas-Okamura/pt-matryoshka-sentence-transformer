@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+WikipediaRetrievalMultilingual,pt-corpus,test,iara-project/e5-large-matryoshka-sts-pt,text,13500,101.19918518518519,68.42177008495395,19,83.0,234.0,341.0,751,exact

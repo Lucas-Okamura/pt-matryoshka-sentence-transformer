@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+BrazilianToxicTweetsClassification,,test,iara-project/e5-large-matryoshka-sts-pt,text,2048,27.0751953125,18.379628720814196,3,22.0,67.0,85.52999999999997,106,exact

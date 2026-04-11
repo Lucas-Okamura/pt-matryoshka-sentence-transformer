@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+XGlueWPRReranking,pt-corpus,test,iara-project/e5-large-matryoshka-sts-pt,text,8313,53.51028509563334,9.647980528791095,8,54.0,68.0,76.0,99,exact

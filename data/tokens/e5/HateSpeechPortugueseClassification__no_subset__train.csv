@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+HateSpeechPortugueseClassification,,train,iara-project/e5-large-matryoshka-sts-pt,text,2048,34.4150390625,11.961551702814276,6,36.0,53.0,59.0,67,exact

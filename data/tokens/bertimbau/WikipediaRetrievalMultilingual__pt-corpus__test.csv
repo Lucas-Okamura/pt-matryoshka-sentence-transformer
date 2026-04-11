@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+WikipediaRetrievalMultilingual,pt-corpus,test,iara-project/BERTimbau-large-matryoshka-sts-pt,text,13500,94.10474074074074,63.10614450132154,5,77.0,218.0,314.0100000000002,668,exact

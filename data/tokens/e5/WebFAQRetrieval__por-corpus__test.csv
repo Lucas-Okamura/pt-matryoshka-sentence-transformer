@@ -1,0 +1,2 @@
+dataset_name,subset,split,model_name,field,n,mean,std,min,p50,p95,p99,max,percentiles_note
+WebFAQRetrieval,por-corpus,test,iara-project/e5-large-matryoshka-sts-pt,text,209353,71.67626926769618,72.74275501193362,7,56.0,177.0,360.0,4915,approx (reservoir sample of 200000)
