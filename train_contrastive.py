@@ -16,10 +16,10 @@ load_dotenv()
 # 1. Configurações e Modelo
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "neuralmind/bert-large-portuguese-cased"
+model_name = "wallacelw/ModBERTBr"
 model_raw_name = model_name.split("/")[-1]
-matryoshka_dims = [1024, 512, 256, 128, 64]
-num_gpus = 1
+matryoshka_dims = [768, 512, 256, 128, 64]
+num_gpus = 2
 batch_size = 64
 
 model = SentenceTransformer(model_name)
@@ -137,7 +137,7 @@ dev_evaluator = SequentialEvaluator(evaluators)
 
 # 5. Argumentos de Treinamento
 args = SentenceTransformerTrainingArguments(
-    output_dir=f"output/{model_raw_name}-matryoshka-sts-pt-loss",
+    output_dir=f"output/{model_raw_name}-sts-pt-loss",
     num_train_epochs=20,
     per_device_train_batch_size=batch_size,
     warmup_steps=0.1,
@@ -208,5 +208,5 @@ final_test_evaluator = SequentialEvaluator(test_evaluators)
 final_test_evaluator(model)
 
 os.makedirs("models", exist_ok=True)
-model.save_pretrained(f"models/{model_raw_name}-matryoshka-sts-pt")
-model.push_to_hub(f"iara-project/{model_raw_name}-matryoshka-sts-pt")
+model.save_pretrained(f"models/{model_raw_name}-sts-pt")
+model.push_to_hub(f"iara-project/{model_raw_name}-sts-pt")
