@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import datetime
-from datasets import load_dataset, concatenate_datasets
+from datasets import load_dataset
 from sentence_transformers import (
     SentenceTransformer,
     SentenceTransformerTrainer,
@@ -16,8 +16,8 @@ load_dotenv()
 # 1. Configurações e Modelo
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
-model_name = "intfloat/multilingual-e5-large"
-model_raw_name = "e5-large"#model_name.split("/")[-1]
+model_name = "neuralmind/bert-large-portuguese-cased"
+model_raw_name = model_name.split("/")[-1]
 matryoshka_dims = [1024, 512, 256, 128, 64]
 num_gpus = 1
 batch_size = 64
@@ -25,129 +25,29 @@ batch_size = 64
 model = SentenceTransformer(model_name)
 
 # --- Funções de Normalização ---
-def normalize_sts(example, label_col=False):
+def normalize_sts(example):
     # STSb e ASSIN usam escala 0-5. CoSENTLoss e Evaluators preferem 0-1 ou escala original bem definida.
     # Vamos normalizar para 0-1 para consistência.
-    if label_col:
-        return {"label": float(example['label']) / 5.0}
-    else:
-        score_col = "similarity_score" if "similarity_score" in example else "relatedness_score"
-        return {"label": float(example[score_col]) / 5.0}
-
-# --- Novo Dataset: QA com Labels ---
-def prepare_qa_label_dataset(dataset):
-    # Filtramos apenas onde a resposta é correta (label == 1)
-    # Criamos um par: 'anchor' (pergunta) e 'positive' (parágrafo + resposta)
-    ds = dataset.filter(lambda x: x["label"] == 1).map(
-        lambda x: {
-            "anchor": x["question"],
-            "positive": f"Parágrafo: {x['paragraph']} Resposta: {x['answer']}" 
-        }
-    ).select_columns(["anchor", "positive"])
-    
-    return ds
+    score_col = "similarity_score" if "similarity_score" in example else "relatedness_score"
+    return {"label": float(example[score_col]) / 5.0}
 
 # 2. Carga e Preparação dos Datasets
 train_dataset = {}
 eval_dataset = {}
 
 # --- NLI: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-nli1_splits = ["pt_anli", "pt_fever", "pt_ling", "pt_mnli", "pt_wanli"]
-for split_name in nli1_splits:
+nli_splits = ["pt_anli", "pt_fever", "pt_ling", "pt_mnli", "pt_wanli"]
+for split_name in nli_splits:
     ds = load_dataset("MoritzLaurer/multilingual-NLI-26lang-2mil7", split=split_name)
     # Filtramos apenas Entailment (label 0) para agir como pares positivos no MNRL
     train_dataset[f"nli_{split_name}"] = ds.filter(lambda x: x["label"] == 0).rename_columns({
         "premise": "anchor", "hypothesis": "positive"
     }).select_columns(["anchor", "positive"])
 
-# --- QA PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-qa_splits = ['boolq_pt-BR', 'qnli_pt-BR']
-for split_name in qa_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    
-    if 'passage' in extraglue['train'].column_names:
-        train_dataset[f"qa_extraglue_{split_name}"] = extraglue['train'].filter(lambda x: x["label"] == 1).rename_columns({
-            "question": "anchor", "passage": "positive"
-        }).select_columns(["anchor", "positive"])
-        eval_dataset[f"qa_extraglue_{split_name}"] = extraglue['validation'].filter(lambda x: x["label"] == 1).rename_columns({
-            "question": "anchor", "passage": "positive"
-        }).select_columns(["anchor", "positive"])
-    elif 'sentence' in extraglue['train'].column_names:
-        train_dataset[f"qa_extraglue_{split_name}"] = extraglue['train'].filter(lambda x: x["label"] == 1).rename_columns({
-            "question": "anchor", "sentence": "positive"
-        }).select_columns(["anchor", "positive"])
-        eval_dataset[f"qa_extraglue_{split_name}"] = extraglue['validation'].filter(lambda x: x["label"] == 1).rename_columns({
-            "question": "anchor", "sentence": "positive"
-        }).select_columns(["anchor", "positive"])
-    else:
-        raise Exception("Sem colunas com os nomes propostos!")
-
-# --- QA 2 PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-qa2_splits = ['mrpc_pt-BR']
-for split_name in qa2_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    train_dataset[f"qa_extraglue_{split_name}"] = extraglue['train'].filter(lambda x: x["label"] == 1).rename_columns({
-        "sentence1": "anchor", "sentence2": "positive"
-    }).select_columns(["anchor", "positive"])
-    eval_dataset[f"qa_extraglue_{split_name}"] = extraglue['validation'].filter(lambda x: x["label"] == 1).rename_columns({
-        "sentence1": "anchor", "sentence2": "positive"
-    }).select_columns(["anchor", "positive"])
-
-# --- QA Multiple Choice PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-qa_mc_splits = ['copa_pt-BR']
-for split_name in qa_mc_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    train_choice1 = extraglue['train'].filter(lambda x: x["label"] == 0).rename_columns({
-        "premise": "anchor", "choice1": "positive"
-    }).select_columns(["anchor", "positive"])
-    train_choice2 = extraglue['train'].filter(lambda x: x["label"] == 1).rename_columns({
-        "premise": "anchor", "choice2": "positive"
-    }).select_columns(["anchor", "positive"])
-    eval_choice1 = extraglue['validation'].filter(lambda x: x["label"] == 0).rename_columns({
-        "premise": "anchor", "choice1": "positive"
-    }).select_columns(["anchor", "positive"])
-    eval_choice2 = extraglue['validation'].filter(lambda x: x["label"] == 1).rename_columns({
-        "premise": "anchor", "choice2": "positive"
-    }).select_columns(["anchor", "positive"])
-
-    train_dataset[f"qa_extraglue_{split_name}"] = concatenate_datasets([train_choice1, train_choice2])
-    eval_dataset[f"qa_extraglue_{split_name}"] = concatenate_datasets([eval_choice1, eval_choice2])
-
-# --- QA 2 PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-qa3_splits = ['multirc_pt-BR']
-for split_name in qa3_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    train_dataset[f"qa_extraglue_{split_name}"] = prepare_qa_label_dataset(extraglue['train'])
-    eval_dataset[f"qa_extraglue_{split_name}"] = prepare_qa_label_dataset(extraglue['validation'])
-
-# --- NLI PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-nli2_splits = ['cb_pt-BR', 'rte_pt-BR']
-for split_name in nli2_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    # Filtramos apenas Entailment (label 0) para agir como pares positivos no MNRL
-    train_dataset[f"nli_extraglue_{split_name}"] = extraglue['train'].filter(lambda x: x["label"] == 0).rename_columns({
-        "premise": "anchor", "hypothesis": "positive"
-    }).select_columns(["anchor", "positive"])
-    eval_dataset[f"nli_extraglue_{split_name}"] = extraglue['validation'].filter(lambda x: x["label"] == 0).rename_columns({
-        "premise": "anchor", "hypothesis": "positive"
-    }).select_columns(["anchor", "positive"])
-
-# --- NLI PORTULAN/extraglue: MultipleNegativesRankingLoss (Melhor para Pares Positivos/Inferência) ---
-nli3_splits = ['wnli_pt-BR']
-for split_name in nli3_splits:
-    extraglue = load_dataset("PORTULAN/extraglue", split_name)
-    # Filtramos apenas Entailment (label 0) para agir como pares positivos no MNRL
-    train_dataset[f"nli_extraglue_{split_name}"] = extraglue['train'].filter(lambda x: x["label"] == 1).rename_columns({
-        "sentence1": "anchor", "sentence2": "positive"
-    }).select_columns(["anchor", "positive"])
-    eval_dataset[f"nli_extraglue_{split_name}"] = extraglue['validation'].filter(lambda x: x["label"] == 1).rename_columns({
-        "sentence1": "anchor", "sentence2": "positive"
-    }).select_columns(["anchor", "positive"])
-
-# --- STS PORTULAN/extraglue: CoSENTLoss (Melhor para Scores Contínuos) ---
-extraglue_sts = load_dataset("PORTULAN/extraglue", 'stsb_pt-BR')
-train_dataset["extraglue_stsb"] = extraglue_sts["train"].map(normalize_sts, fn_kwargs={'label_col': True}).select_columns(["sentence1", "sentence2", "label"])
-eval_dataset["extraglue_stsb"] = extraglue_sts["validation"].map(normalize_sts, fn_kwargs={'label_col': True}).select_columns(["sentence1", "sentence2", "label"])
+# --- STSb Multi MT (Subset 'pt'): CoSENTLoss (Melhor para Scores Contínuos) ---
+stsb_pt = load_dataset("stsb_multi_mt", "pt")
+train_dataset["stsb"] = stsb_pt["train"].map(normalize_sts).select_columns(["sentence1", "sentence2", "label"])
+eval_dataset["stsb"] = stsb_pt["dev"].map(normalize_sts).select_columns(["sentence1", "sentence2", "label"])
 
 # --- ASSIN 1: CoSENTLoss ---
 assin1 = load_dataset("assin", split="train")
@@ -180,7 +80,7 @@ eval_dataset["sick_br"] = sick_br["validation"].map(normalize_sts).rename_column
 
 # --- sentence-transformers/mldr: MultipleNegativesRankingLoss ---
 mldr = load_dataset("sentence-transformers/mldr", "pt-triplet")
-train_dataset["nli_mldr"] = mldr["train"]
+train_dataset["mldr"] = mldr["train"]
 
 # 3. Definição das Losses com Matryoshka
 base_mnrl_loss = losses.MultipleNegativesRankingLoss(model)
@@ -194,7 +94,7 @@ loss_map = {}
 
 # Mapear datasets de TREINO
 for name in train_dataset.keys():
-    if "nli" in name or "qa" in name:
+    if "nli" in name or "mldr" in name:
         loss_map[name] = matryoshka_mnrl_loss
     else:
         loss_map[name] = matryoshka_cosent_loss
@@ -204,9 +104,9 @@ evaluators = []
 for dim in matryoshka_dims:
     # STSb Dev
     evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=extraglue_sts["validation"]["sentence1"],
-        sentences2=extraglue_sts["validation"]["sentence2"],
-        scores=[s / 5.0 for s in extraglue_sts["validation"]["label"]],
+        sentences1=stsb_pt["dev"]["sentence1"],
+        sentences2=stsb_pt["dev"]["sentence2"],
+        scores=[s / 5.0 for s in stsb_pt["dev"]["similarity_score"]],
         name=f"stsb-pt-dev-{dim}",
         truncate_dim=dim,
     ))
@@ -239,17 +139,17 @@ dev_evaluator = SequentialEvaluator(evaluators)
 
 # 5. Argumentos de Treinamento
 args = SentenceTransformerTrainingArguments(
-    output_dir=f"output/{model_raw_name}-matryoshka-sts-pt-loss-v2",
+    output_dir=f"output/{model_raw_name}-matryoshka-sts-pt-loss",
     num_train_epochs=20,
     per_device_train_batch_size=batch_size,
     warmup_steps=0.1,
     weight_decay=0.2,
     fp16=True,
     eval_strategy="steps",
-    eval_steps=1000,
+    eval_steps=250,
     save_strategy="steps",
     logging_steps=100,
-    learning_rate=1e-4,
+    learning_rate=5e-5,
     gradient_accumulation_steps=512//(batch_size * num_gpus),
     multi_dataset_batch_sampler="proportional",
     gradient_checkpointing=True, 
@@ -275,9 +175,9 @@ test_evaluators = []
 for dim in matryoshka_dims:
     # STSb Test
     test_evaluators.append(EmbeddingSimilarityEvaluator(
-        sentences1=extraglue_sts["test"]["sentence1"],
-        sentences2=extraglue_sts["test"]["sentence2"],
-        scores=[s / 5.0 for s in extraglue_sts["test"]["similarity_score"]],
+        sentences1=stsb_pt["test"]["sentence1"],
+        sentences2=stsb_pt["test"]["sentence2"],
+        scores=[s / 5.0 for s in stsb_pt["test"]["similarity_score"]],
         name=f"stsb-test-{dim}",
         truncate_dim=dim,
     ))
@@ -310,5 +210,5 @@ final_test_evaluator = SequentialEvaluator(test_evaluators)
 final_test_evaluator(model)
 
 os.makedirs("models", exist_ok=True)
-model.save_pretrained(f"models/{model_raw_name}-matryoshka-sts-pt-v2")
-model.push_to_hub(f"iara-project/{model_raw_name}-matryoshka-sts-pt-v2")
+model.save_pretrained(f"models/{model_raw_name}-matryoshka-sts-pt")
+model.push_to_hub(f"iara-project/{model_raw_name}-matryoshka-sts-pt")
