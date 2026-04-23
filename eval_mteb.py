@@ -9,7 +9,7 @@ load_dotenv()
 
 DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
 
-model_list = ["iara-project/BERTimbau-large-simcse-pt-ckpt-28000"]
+model_list = ["Alibaba-NLP/gte-multilingual-base"]
 dims_list = [None, 512, 256, 128, 64]
 # None, 512, 256, 128, 64
 filepath = 'data/results_eval_mteb_finetuned.csv'
