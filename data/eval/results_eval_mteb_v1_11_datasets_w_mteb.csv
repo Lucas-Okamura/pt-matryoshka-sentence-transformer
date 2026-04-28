@@ -339,6 +339,16 @@ iara-project/ModBERTBr-matryoshka-sts-pt,64.0,WikipediaRerankingMultilingual,0.6
 iara-project/ModBERTBr-matryoshka-sts-pt,64.0,XGlueWPRReranking,0.71053
 iara-project/ModBERTBr-matryoshka-sts-pt,64.0,WebFAQRetrieval,0.38915
 iara-project/ModBERTBr-matryoshka-sts-pt,64.0,WikipediaRetrievalMultilingual,0.60551
+iara-project/ModBERTBr-matryoshka-sts-pt,,MultiLongDocReranking,0.92458
+iara-project/ModBERTBr-matryoshka-sts-pt,,MultiLongDocRetrieval,0.4840649999999999
+iara-project/ModBERTBr-matryoshka-sts-pt,512.0,MultiLongDocReranking,0.92618
+iara-project/ModBERTBr-matryoshka-sts-pt,512.0,MultiLongDocRetrieval,0.48099
+iara-project/ModBERTBr-matryoshka-sts-pt,256.0,MultiLongDocReranking,0.91399
+iara-project/ModBERTBr-matryoshka-sts-pt,256.0,MultiLongDocRetrieval,0.47813
+iara-project/ModBERTBr-matryoshka-sts-pt,128.0,MultiLongDocReranking,0.91399
+iara-project/ModBERTBr-matryoshka-sts-pt,128.0,MultiLongDocRetrieval,0.45861
+iara-project/ModBERTBr-matryoshka-sts-pt,64.0,MultiLongDocReranking,0.90379
+iara-project/ModBERTBr-matryoshka-sts-pt,64.0,MultiLongDocRetrieval,0.4105
 iara-project/ModBERTBr-sts-pt,,Assin2STS,0.8112130600095888
 iara-project/ModBERTBr-sts-pt,,SICK-BR-STS,0.9143241614034068
 iara-project/ModBERTBr-sts-pt,,STSBenchmarkMultilingualSTS,0.8216799575999292
