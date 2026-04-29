@@ -9,10 +9,9 @@ load_dotenv()
 
 DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
 
-model_list = ["Alibaba-NLP/gte-multilingual-base"]
+model_list = ["iara-project/e5-large-matryoshka-sts-pt"]
 dims_list = [None, 512, 256, 128, 64]
-# None, 512, 256, 128, 64
-filepath = 'data/results_eval_mteb_finetuned.csv'
+filepath = 'data/results_eval_mteb.csv'
 
 tasks = [
     ("Assin2STS", None),
@@ -35,7 +34,15 @@ tasks = [
 ]
 
 for model_name in model_list:
-    model_meta = SentenceTransformer(model_name, device=DEVICE)
+    if "e5" in model_name:
+        sentence_transformer_prompts = {"query": "query: ", "document": "passage: "}
+    else:
+        sentence_transformer_prompts = None
+    model_meta = SentenceTransformer(
+        model_name,
+        device=DEVICE,
+        prompts=sentence_transformer_prompts
+    )
     for truncate_dim in dims_list:
         # select the desired tasks and evaluate
         task_name_list = []
@@ -54,7 +61,7 @@ for model_name in model_list:
             task = mteb.get_task(task_info[0], languages=['por'], hf_subsets=task_info[1])
 
             # with encode kwargs
-            result = mteb.evaluate(model_meta, task, encode_kwargs={"batch_size": 128, "truncate_dim": truncate_dim}, cache=None)
+            result = mteb.evaluate(model_meta, task, encode_kwargs={"batch_size": 256, "truncate_dim": truncate_dim}, cache=None)
 
             task_name = result.task_results[0].task_name
             model_name = result.model_name
